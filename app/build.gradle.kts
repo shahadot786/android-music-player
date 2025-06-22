@@ -29,6 +29,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    buildFeatures{
+        viewBinding = true
+    }
 }
 
 dependencies {
@@ -40,4 +43,10 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    implementation(libs.exoplayer)
+    implementation(libs.glide)
+    annotationProcessor(libs.compiler)
+    implementation(libs.palette)
+    implementation(libs.waveformseekbar)
+    implementation(libs.glide.transformations)
 }

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">android-music-player</string>
+    <string name="get_started">Get Started</string>
+    <string name="explore_artist">Explore Artist</string>
 </resources>
