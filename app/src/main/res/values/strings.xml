@@ -2,4 +2,16 @@
     <string name="app_name">android-music-player</string>
     <string name="get_started">Get Started</string>
     <string name="explore_artist">Explore Artist</string>
+    <string name="todo">TODO</string>
+    <string name="backbtnimage">backBtnImage</string>
+    <string name="favbtnimage">favBtnImage</string>
+    <string name="avatarimage">avatarImage</string>
+    <string name="title">Title</string>
+    <string name="artist">artist</string>
+    <string name="_0_00">0:00</string>
+    <string name="play_btn_image">play btn image</string>
+    <string name="nextbtn">nextBtn</string>
+    <string name="prevbtn">prevBtn</string>
+    <string name="btnrepeat">btnRepeat</string>
+    <string name="buttonshuffle">buttonShuffle</string>
 </resources>

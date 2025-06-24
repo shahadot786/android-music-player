@@ -1,5 +1,6 @@
 package com.shahadot.android_music_player;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
@@ -17,6 +18,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.shahadot.android_music_player.databinding.ActivityMainBinding;
@@ -38,7 +40,6 @@ public class MainActivity extends AppCompatActivity implements SongAdapter.OnIte
                 }
             });
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,7 +51,8 @@ public class MainActivity extends AppCompatActivity implements SongAdapter.OnIte
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        
+
+        binding.recyclerViewSongs.setLayoutManager(new LinearLayoutManager(this));
         checkPermissionAndLoadSongs();
     }
 
@@ -61,28 +63,29 @@ public class MainActivity extends AppCompatActivity implements SongAdapter.OnIte
         } else {
             permission = Manifest.permission.READ_EXTERNAL_STORAGE;
         }
-        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+
+        if (ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED) {
             loadSongs();
         } else {
-//            requestPermissionLauncher.launch(permission);
+            permissionLauncher.launch(permission); 
         }
     }
 
-    private List<Song> getSongs(){
+    private List<Song> getSongs() {
         List<Song> songs = new ArrayList<>();
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
         String sortOrder = MediaStore.Audio.Media.TITLE + " ASC";
 
         try (Cursor cursor = getContentResolver().query(uri, null, selection, null, sortOrder)) {
-            if(cursor != null){
+            if (cursor != null) {
                 int idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID);
                 int titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE);
                 int artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST);
                 int dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
                 int albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID);
 
-                while (cursor.moveToNext()){
+                while (cursor.moveToNext()) {
                     long id = cursor.getLong(idColumn);
                     String title = cursor.getString(titleColumn);
                     String artist = cursor.getString(artistColumn);
@@ -93,10 +96,10 @@ public class MainActivity extends AppCompatActivity implements SongAdapter.OnIte
                 }
             }
         }
-        return  songs;
+        return songs;
     }
 
-    private void loadSongs(){
+    private void loadSongs() {
         songList = getSongs();
         adapter = new SongAdapter(songList, this);
         binding.recyclerViewSongs.setAdapter(adapter);
@@ -104,6 +107,9 @@ public class MainActivity extends AppCompatActivity implements SongAdapter.OnIte
 
     @Override
     public void onItemClick(int position) {
-
+        Intent intent = new Intent(this,PlayerActivity.class);
+        intent.putParcelableArrayListExtra("songList", (ArrayList<Song>) songList);
+        intent.putExtra("position", position);
+        startActivity(intent);
     }
 }
