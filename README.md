@@ -35,16 +35,6 @@ An elegant and powerful local music player app built using **Jetpack Media3 (Exo
 
 ---
 
-## 🗂️ Project Structure
-com.shahadot.android_music_player/
-│
-├── PlayerActivity.java # Main music player screen
-├── MusicService.java # Background media session service
-├── Song.java # Parcelable song model
-├── res/
-│ ├── layout/ # UI layout XML files
-│ └── drawable/ # Icons and background resources
-└── AndroidManifest.xml
 
 
 ---
@@ -61,21 +51,17 @@ com.shahadot.android_music_player/
 
 ```bash
 git clone https://github.com/your-username/android-music-player.git
+```
+### 2. Open in Android Studio
+       	Open the project folder
+	Sync Gradle
+	Grant storage/audio permissions (if needed)
 
-
-2. Open in Android Studio
-Open the project folder
-
-Sync Gradle
-
-Grant storage/audio permissions (if needed)
-
-3. Build & Run
-Run the app on your physical device/emulator
-
-Add .mp3 or .m4a files to your device storage
-
-Start enjoying your music 🎶
+### 3. Build & Run
+	Run the app on your physical device/emulator
+	Add .mp3 or .m4a files to your device storage
+	Start enjoying your music 🎶
+	
 
 ## 🧪 Tested On
 ✅ Android 10 (API 29)
@@ -86,11 +72,10 @@ Start enjoying your music 🎶
 ## 📜 License
 This project is licensed under the MIT License. See the LICENSE file for details.
 
-
 ## 👤 Author
 
 **Md. Shahadot Hossain**  
-Junior React Native Developer @ HawkEyes Digital Monitoring Ltd  
+App Developer @ HawkEyes Digital Monitoring Ltd  
 📍 Dhaka, Bangladesh  
 🌐 [LinkedIn](https://www.linkedin.com/in/shahadot786/)
 
