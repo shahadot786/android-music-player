@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">android-music-player</string>
+    <string name="app_name">Audio Player</string>
     <string name="get_started">Get Started</string>
-    <string name="explore_artist">Explore Artist</string>
+    <string name="explore_artist">Explore Songs</string>
     <string name="todo">TODO</string>
     <string name="backbtnimage">backBtnImage</string>
     <string name="favbtnimage">favBtnImage</string>
