@@ -1,5 +1,7 @@
 package com.shahadot.android_music_player;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -28,7 +30,6 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements SongAdapter.OnItemClickListener {
     private ActivityMainBinding binding;
-    private RecyclerView.Adapter adapter;
     private List<Song> songList;
 
     private final ActivityResultLauncher<String> permissionLauncher =
@@ -54,6 +55,20 @@ public class MainActivity extends AppCompatActivity implements SongAdapter.OnIte
 
         binding.recyclerViewSongs.setLayoutManager(new LinearLayoutManager(this));
         checkPermissionAndLoadSongs();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    "music_channel",
+                    "Music Playback",
+                    NotificationManager.IMPORTANCE_LOW
+            );
+            channel.setDescription("Media playback controls");
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(channel);
+            }
+        }
+
     }
 
     private void checkPermissionAndLoadSongs() {
@@ -91,7 +106,6 @@ public class MainActivity extends AppCompatActivity implements SongAdapter.OnIte
                     String artist = cursor.getString(artistColumn);
                     String data = cursor.getString(dataColumn);
                     long albumId = cursor.getLong(albumIdColumn);
-
                     songs.add(new Song(id, title, artist, data, albumId));
                 }
             }
@@ -101,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements SongAdapter.OnIte
 
     private void loadSongs() {
         songList = getSongs();
-        adapter = new SongAdapter(songList, this);
+        RecyclerView.Adapter<SongAdapter.SongViewHolder> adapter = new SongAdapter(songList, this);
         binding.recyclerViewSongs.setAdapter(adapter);
     }
 

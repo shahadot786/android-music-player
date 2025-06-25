@@ -3,6 +3,7 @@ package com.shahadot.android_music_player;
 import static com.bumptech.glide.request.RequestOptions.bitmapTransform;
 
 import android.annotation.SuppressLint;
+import android.content.ComponentName;
 import android.content.ContentUris;
 import android.net.Uri;
 import android.os.Bundle;
@@ -25,16 +26,23 @@ import java.util.Random;
 
 import jp.wasabeef.glide.transformations.BlurTransformation;
 
-// Media3 imports
 import androidx.media3.common.MediaItem;
 import androidx.media3.common.PlaybackException;
 import androidx.media3.common.Player;
-import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.session.MediaController;
+import androidx.media3.session.SessionToken;
+
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.FutureCallback;
 
 public class PlayerActivity extends AppCompatActivity {
+
     private ActivityPlayerBinding binding;
-    private ExoPlayer player;
+    private MediaController mediaController;
     private final Handler handler = new Handler();
+
     private List<Song> songList = new ArrayList<>();
     private List<Song> shuffledList = new ArrayList<>();
     private int currentIndex = 0;
@@ -44,9 +52,9 @@ public class PlayerActivity extends AppCompatActivity {
     private final Runnable updateRunnable = new Runnable() {
         @Override
         public void run() {
-            if (player != null && player.isPlaying()) {
-                long currentPosition = player.getCurrentPosition();
-                long duration = player.getDuration();
+            if (mediaController != null && mediaController.isPlaying()) {
+                long currentPosition = mediaController.getCurrentPosition();
+                long duration = mediaController.getDuration();
                 if (duration > 0) {
                     float progress = ((float) currentPosition / duration);
                     binding.waveformSeekBar.setProgressInPercentage(progress);
@@ -80,6 +88,7 @@ public class PlayerActivity extends AppCompatActivity {
         binding.waveformSeekBar.setWaveform(createWaveForm(), true);
         initPlayerWithSong(currentIndex);
         setupControls();
+
         binding.backBtn.setOnClickListener(v -> finish());
     }
 
@@ -93,10 +102,10 @@ public class PlayerActivity extends AppCompatActivity {
         binding.waveformSeekBar.setCallback(new WaveformSeekBar.Callback() {
             @Override
             public void onProgressChanged(WaveformSeekBar seekBar, float percent, boolean fromUser) {
-                if (fromUser && player != null) {
-                    long duration = player.getDuration();
+                if (fromUser && mediaController != null) {
+                    long duration = mediaController.getDuration();
                     long seekPosition = (long) (percent * duration);
-                    player.seekTo(seekPosition);
+                    mediaController.seekTo(seekPosition);
                     binding.textElapsed.setText(formatTime((int) (seekPosition / 1000)));
                 }
             }
@@ -115,8 +124,12 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void toggleRepeat() {
         isRepeat = !isRepeat;
-        player.setRepeatMode(isRepeat ? Player.REPEAT_MODE_ONE : Player.REPEAT_MODE_OFF);
-        binding.buttonRepeat.setColorFilter(isRepeat ? getResources().getColor(R.color.green) : getResources().getColor(R.color.white));
+        if (mediaController != null) {
+            mediaController.setRepeatMode(isRepeat ? Player.REPEAT_MODE_ONE : Player.REPEAT_MODE_OFF);
+        }
+        binding.buttonRepeat.setColorFilter(
+                getResources().getColor(isRepeat ? R.color.green : R.color.white)
+        );
     }
 
     private void toggleShuffle() {
@@ -132,50 +145,66 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void togglePlayPause() {
-        if (player.isPlaying()) {
-            player.pause();
-            handler.removeCallbacks(updateRunnable);
-        } else {
-            player.play();
-            handler.postDelayed(updateRunnable, 0);
+        if (mediaController != null) {
+            if (mediaController.isPlaying()) {
+                mediaController.pause();
+                handler.removeCallbacks(updateRunnable);
+            } else {
+                mediaController.play();
+                handler.postDelayed(updateRunnable, 0);
+            }
+            updatePlayPauseIcon();
         }
-        updatePlayPauseIcon();
     }
 
     private void initPlayerWithSong(int index) {
         Song song = isShuffle ? shuffledList.get(index) : songList.get(index);
 
-        if (player != null) {
-            player.release();
-        }
+        SessionToken sessionToken = new SessionToken(this, new ComponentName(this, MusicService.class));
+        MediaController.Builder builder = new MediaController.Builder(this, sessionToken);
+        ListenableFuture<MediaController> controllerFuture = builder.buildAsync();
 
-        player = new ExoPlayer.Builder(this).build();
-        player.setRepeatMode(isRepeat ? Player.REPEAT_MODE_ONE : Player.REPEAT_MODE_OFF);
-
-        player.addListener(new Player.Listener() {
+        Futures.addCallback(controllerFuture, new FutureCallback<MediaController>() {
             @Override
-            public void onPlayerError(@NonNull PlaybackException error) {
-                Toast.makeText(PlayerActivity.this, "Error Playing Media: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onPlaybackStateChanged(int playbackState) {
-                updatePlayPauseIcon();
-                if (playbackState == Player.STATE_READY) {
-                    binding.textDuration.setText(formatTime((int) (player.getDuration() / 1000)));
-                    handler.postDelayed(updateRunnable, 0);
-                } else if (playbackState == Player.STATE_ENDED) {
-                    playNext();
+            public void onSuccess(MediaController controller) {
+                if (mediaController != null) {
+                    mediaController.release();
                 }
+
+                mediaController = controller;
+
+                mediaController.setRepeatMode(isRepeat ? Player.REPEAT_MODE_ONE : Player.REPEAT_MODE_OFF);
+                mediaController.setMediaItem(MediaItem.fromUri(song.data));
+                mediaController.prepare();
+                mediaController.play();
+
+                mediaController.addListener(new Player.Listener() {
+                    @Override
+                    public void onPlayerError(@NonNull PlaybackException error) {
+                        Toast.makeText(PlayerActivity.this, "Playback Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onPlaybackStateChanged(int playbackState) {
+                        updatePlayPauseIcon();
+                        if (playbackState == Player.STATE_READY) {
+                            binding.textDuration.setText(formatTime((int) (mediaController.getDuration() / 1000)));
+                            handler.postDelayed(updateRunnable, 0);
+                        } else if (playbackState == Player.STATE_ENDED) {
+                            playNext();
+                        }
+                    }
+                });
+
+                updatePlayPauseIcon();
+                updateUI(song);
             }
-        });
 
-        player.setMediaItem(MediaItem.fromUri(song.data));
-        player.prepare();
-        player.play();
-
-        updatePlayPauseIcon();
-        updateUI(song);
+            @Override
+            public void onFailure(@NonNull Throwable t) {
+                Toast.makeText(PlayerActivity.this, "Failed to connect to media session: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        }, MoreExecutors.directExecutor());
     }
 
     private void updateUI(Song song) {
@@ -231,7 +260,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void updatePlayPauseIcon() {
         binding.buttonPlayPause.setImageResource(
-                player != null && player.isPlaying()
+                mediaController != null && mediaController.isPlaying()
                         ? R.drawable.ic_pause_24
                         : R.drawable.ic_play_arrow_24
         );
@@ -250,10 +279,10 @@ public class PlayerActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if (player != null) {
-            handler.removeCallbacks(updateRunnable);
-            player.release();
-            player = null;
+        handler.removeCallbacks(updateRunnable);
+        if (mediaController != null) {
+            mediaController.release();
+            mediaController = null;
         }
         super.onDestroy();
     }
