@@ -7,12 +7,12 @@ An elegant and powerful local music player app built using **Jetpack Media3 (Exo
 ## ✨ Features
 
 - 🎧 Offline audio playback using **Media3 + ExoPlayer**
-- 🔄 Notification media controls: **Play/Pause, Next, Previous, Shuffle, Repeat**
+- 🔄 Notification media controls: **Play/Pause, Previous**
 - 📶 **Waveform SeekBar** for interactive progress
 - 🌁 Album art with **blurred background**
 - 📱 Stylish and responsive **UI built with ViewBinding**
 - 🔊 Background playback via **MediaSessionService**
-- 🔁 Shuffle & Repeat functionality via notification
+- 🔁 Shuffle & Repeat functionality
 
 ---
 
@@ -35,10 +35,6 @@ An elegant and powerful local music player app built using **Jetpack Media3 (Exo
 
 ---
 
-
-
----
-
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -50,7 +46,7 @@ An elegant and powerful local music player app built using **Jetpack Media3 (Exo
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/android-music-player.git
+git clone https://github.com/shahadot786/android-music-player.git
 ```
 ### 2. Open in Android Studio
 	Open the project folder
