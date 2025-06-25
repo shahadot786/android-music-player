@@ -53,7 +53,7 @@ An elegant and powerful local music player app built using **Jetpack Media3 (Exo
 git clone https://github.com/your-username/android-music-player.git
 ```
 ### 2. Open in Android Studio
-       	Open the project folder
+	Open the project folder
 	Sync Gradle
 	Grant storage/audio permissions (if needed)
 
@@ -65,8 +65,11 @@ git clone https://github.com/your-username/android-music-player.git
 
 ## 🧪 Tested On
 ✅ Android 10 (API 29)
+
 ✅ Android 11, 12, 13, and 14
+
 ✅ .mp3, .m4a audio files
+
 ✅ Works in background and lock screen
 
 ## 📜 License
